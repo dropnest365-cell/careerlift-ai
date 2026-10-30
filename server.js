@@ -1,35 +1,28 @@
 const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
-require('dotenv').config();
-
+const path = require('path');
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
-app.use(cors({ origin: '*' }));
-app.use(express.json({ limit: '100kb' }));
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false });
-app.use('/api/', apiLimiter);
+// 1. Serve static files (HTML, CSS, JS, images) from the project root
+app.use(express.static(path.join(__dirname)));
 
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'online', database: 'memory', ai: 'connected', timestamp: new Date().toISOString() });
+// --- YOUR API ROUTES GO HERE ---
+// e.g., app.post('/api/career-lift', (req, res) => { ... });
+
+
+// 2. Fallback route to serve index.html for any non-API requests
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.post('/api/resume/improve', (req, res) => {
-  res.json({ result: { overallScore: 85, summary: 'Resume structure analyzed successfully.', strengths: ['Clear action verbs.'], improvements: ['Add performance metrics.'] }, engine: 'backend-heuristic' });
-});
+// Export the app for Vercel serverless deployment
+module.exports = app;
 
-app.post('/api/jobs/match', (req, res) => {
-  res.json({ matchScore: 82, matchedSkills: ['JavaScript', 'Node.js'], missingSkills: ['Docker'], suggestions: ['Highlight system design.'], engine: 'backend-heuristic' });
-});
-
-app.use((req, res) => {
-  res.status(404).json({ error: 'Endpoint not found.' });
-});
-
-app.listen(PORT, () => {
-  console.log('Secured CareerLift AI Backend running on http://localhost:' + PORT);
-});
+// Local development listening check
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
