@@ -1,28 +1,47 @@
 const express = require('express');
 const path = require('path');
+const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+require('dotenv').config();
+
 const app = express();
 
-// Middleware
+// Security and utility middleware
+app.use(helmet({
+  contentSecurityPolicy: false,
+}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 1. Serve static files (HTML, CSS, JS, images) from the project root
+// Rate limiter middleware
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP
+});
+app.use(limiter);
+
+// 1. Serve static files (HTML, CSS, JS) from project root
 app.use(express.static(path.join(__dirname)));
 
-// --- YOUR API ROUTES GO HERE ---
-// e.g., app.post('/api/career-lift', (req, res) => { ... });
+// 2. API Routes
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', ai: 'Active' });
+});
 
-
-// 2. Fallback route to serve index.html for any non-API requests
+// 3. Fallback route to serve index.html for frontend routing
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Export the app for Vercel serverless deployment
+// CRITICAL: Export app for Vercel serverless execution
 module.exports = app;
 
-// Local development listening check
-const PORT = process.env.PORT || 3000;
+// Local development server listener (ignored by Vercel in production)
 if (process.env.NODE_ENV !== 'production') {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
