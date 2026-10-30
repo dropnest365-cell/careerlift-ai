@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CareerLift AI</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; align-items: center; justify-content: height: 100vh; margin: 0; padding: 40px; }
+        .container { max-width: 600px; width: 100%; background: #1e293b; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); text-align: center; }
+        h1 { color: #38bdf8; margin-bottom: 10px; }
+        p { color: #94a3b8; }
+        .btn { background: #38bdf8; color: #0f172a; padding: 12px 24px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 16px; }
+        .btn:hover { background: #0ea5e9; }
+        .status { margin-top: 15px; font-size: 14px; color: #4ade80; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CareerLift AI</h1>
+        <p>Your intelligent career companion powered by advanced AI and backend automation.</p>
+        <button class="btn" onclick="checkServer()">Check Backend Status</button>
+        <div class="status" id="statusResult"></div>
+    </div>
+
+    <script>
+        async function checkServer() {
+            const resultDiv = document.getElementById('statusResult');
+            resultDiv.innerText = "Checking backend...";
+            try {
+                const res = await fetch('/api/health');
+                const data = await res.json();
+                resultDiv.innerText = `Connected! Status: ${data.status} (AI: ${data.ai})`;
+            } catch (err) {
+                resultDiv.innerText = "Error connecting to backend.";
+                resultDiv.style.color = "#f87171";
+            }
+        }
+    </script>
+</body>
+</html>
